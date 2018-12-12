@@ -2,22 +2,16 @@ package main
 
 import (
 	"fmt"
+	"regexp"
+	// "WebSocketInBeego/models"
 )
 
-type Student struct {
-	name string
-}
+// var engine *xorm.Engine
 
-func modify(s Student) {
-	s.name = "modify"
-	fmt.Printf("%p\n", &s)
-}
 func main() {
+	text := `Hello 世界！123 Go.`
 
-	var s1 Student = Student{name: "old"}
-	fmt.Printf("%p\n", &s1)
-
-	modify(s1)
-	fmt.Printf("%p\n", &s1)
-
+	// 查找连续的小写字母
+	reg := regexp.MustCompile(`(\w)e(\w)`)
+	fmt.Printf("%q\n", reg.FindAllStringSubmatch(text, -1))
 }

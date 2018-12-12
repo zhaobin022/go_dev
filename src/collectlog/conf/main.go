@@ -35,6 +35,7 @@ type AppConfig struct {
 	Loglevel       string
 	ChannelSize    int
 	KafkaConn      string
+	KafkaParallel  int
 	EtcdConns      []string
 	EtcdPrefix     string
 	Collects       []Collects
@@ -57,6 +58,8 @@ func (acf *AppConfig) GenAppConf() {
 	// time.Sleep(time.Second * 5)
 	channelSize := conf.DefaultInt("parallel::channelsize", 100)
 	kafkaConn := conf.String("kafka::conn")
+	kafkaParallel := conf.DefaultInt("kafka::parallel", 1)
+
 	etcdConns := conf.Strings("etcd::conn")
 	etcdPrefix := conf.String("etcd::prefix")
 	if !strings.HasSuffix(etcdPrefix, "/") {
@@ -65,6 +68,7 @@ func (acf *AppConfig) GenAppConf() {
 
 	acf.ChannelSize = channelSize
 	acf.KafkaConn = kafkaConn
+	acf.KafkaParallel = kafkaParallel
 	acf.EtcdConns = etcdConns
 	acf.EtcdPrefix = etcdPrefix
 
