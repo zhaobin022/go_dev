@@ -28,5 +28,5 @@ func init() {
 	beego.Router("/userlist", &controllers.UserApiController{})
 	beego.Router("/useradd", &controllers.UserAddController{})
 	beego.Router("/useredit/:id([0-9]+)", &controllers.UserEditController{})
-
+	beego.Router("/changepass/:id([0-9]+)", &controllers.ChangePassController{})
 }

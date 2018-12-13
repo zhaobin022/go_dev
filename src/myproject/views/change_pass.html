@@ -53,63 +53,22 @@
                 
           <div class="row">
              
-            <div class="col-md-6">
+            <div class="col-md-4 col-md-offset-4">
               <div class="form-group">
                 <label>用户名</label>
-                <input name="username" readonly="readonly" value="{{.user.Name}}" type="username" class="form-control" id="exampleInputEmail1" placeholder="用户名">
+                <input name="username" userid="{{.user.Id}}" readonly="readonly" value="{{.user.Name}}" type="username" class="form-control" id="username" >
               </div>
               <!-- /.form-group -->
               <div class="form-group">
-                <label>是否是管理员</label>
-                <select id="isadmin" name="isadmin" class="form-control select2" style="width: 100%;" data-placeholder="是否是管理员">
-                    {{range $k, $v := .isAdmin}}
-                        {{ if eq $.user.IsAdmin  $v}}
-                        <option selected="selected" data="{{$v}}" value="{{$v}}">{{$k}}</option>
-                        {{else}}
-                        <option data="{{$v}}" value="{{$v}}">{{$k}}</option>
-                        {{end}}
-                    {{end}}
-                </select>
-              </div>
-                <!-- /.form-group -->
+                <label>密码</label>
+                <input name="password1" type="password" class="form-control" id="password1" placeholder="Password">
+                </div>
             <!-- /.form-group -->
-            </div>
-            <!-- /.col -->
-            <div class="col-md-6">
-                <div class="form-group">
-                    <label>权限</label>
-                    <select id="permission" class="form-control select2" multiple="multiple" data-placeholder="请选择权限" style="width: 100%;">
-                    {{range .permissions }}
-                        {{ if IfPermInUser .Id $.user}}
-                            <!-- {{if eq .Comment "" }} -->
-                            <option selected="selected" data="{{.Id}}"　value="{{.Id}}">{{.Name}}</option>
-                            <!-- {{else}}
-                            <option selected="selected"  value="{{.Id}}">{{.Name}}({{.Comment}})</option>
-                            {{end}} -->
-                        {{ else }}
-                            <!-- {{if eq .Comment ""}} -->
-                            <option data="{{.Id}}" value="{{.Id}}">{{.Name}}</option>
-                            <!-- {{else}}
-                            <option value="{{.Id}}">{{.Name}}({{.Comment}})</option>
-                            {{end}} -->
-                        {{end}}
-                    {{end}}
-                    </select>
+            <div class="form-group">
+                <label>密码</label>
+                <input name="password2" type="password" class="form-control" id="password2" placeholder="Password">
                 </div>
-                <!-- /.form-group -->
-                <div class="form-group">
-                    <label>角色</label>
-                    <select id="role" name="role" class="form-control select2" multiple="multiple" data-placeholder="请选择角色" style="width: 100%;">
-                    {{range .roles }}
-                        {{ if IfRoleInUser .Id $.user}}
-                        <option selected="selected" data="{{.Id}}" value="{{.Id}}">{{.Name}}</option>
-                        {{else }}
-                        <option data="{{.Id}}" value="{{.Id}}">{{.Name}}</option>
-                        {{end}}
-                    {{end}}
-                    </select>
-                </div>
-                <!-- /.form-group -->
+            <!-- /.form-group -->
             </div>
             <!-- /.col -->
           
@@ -150,77 +109,32 @@
 <!-- Layer  -->
 <script src="/static/bower_components/layer-v3.1.1/layer/layer.js"></script>
 <script>
-      function getEleIdList(ele){
-        var selectedEl = $("#"+ele).next().find("[class='select2-selection__choice']");
-        var options = $("#"+ele).find("option");
-        var eleList = new Array();
-
-        $(selectedEl).each(function(k,ele){
-            var selectedKey = $(ele).prop("title")
-            $(options).each(function(i,option){
-                var key = $(option).text();
-                if (key== selectedKey) {
-                    var value = $(option).attr("data")
-                    value = parseInt(value);
-                    var eleDict = {};
-                    eleDict["Id"] = value;
-                    eleList.push(eleDict);
-                    return false;
-                }
-            });
-        });
-        return eleList
-      };
-
-
-      function getSingleValue(ele){
-        var selectedEl = $("#"+ele).next().find("[class='select2-selection__rendered']").eq(0);
-        var selectedKey = $(selectedEl).prop("title");
-        var options = $("#"+ele).find("option");
-        var isadmin = ""
-        $(options).each(function(k,ele){
-            if ($(ele).text()==selectedKey){
-                isadmin = $(ele).attr("data");
-                return false;
-            };
-        });
-        return isadmin
-      };
 
       function FormSubmit() {
         var request = {};
         
-        // request["Password1"] = $("[name='password1']").val();
-        // request["Password2"] = $("[name='password2']").val();
+       var userId = $("#username").attr("userid");
+       userId = parseInt(userId);
+       var password1 =  $("#password1").val();
+       var password2 =  $("#password2").val();
 
 
-        var isadmin = getSingleValue("isadmin");
-        
-
-        var permissions = getEleIdList("permission")
-        var roles = getEleIdList("role")
-        request["Permission"] = permissions
-        request["Role"] = roles
-        request["IsAdmin"] = isadmin ==="false" ? false : true;
-        var flag = false;
+        request["Id"] = userId
+        request["Password1"] = password1;
+        request["Password2"] = password2;
+        var ret = false;
         $.ajax({ 
-            type : "POST", 
+            type : "PUT", 
             dataType: "json",
-            // traditional: true,
             async:false,
             contentType: "application/json; charset=utf-8",
-            url : '{{urlfor "UserEditController.Post"}}', 
-            // data:{"Name":Name},
+            url : '/changepass/'+userId, 
             data:JSON.stringify(request),
             success : function(result){
-
-                flag = result;
+                ret = result;
             }
         }); 
-        // $("thisForm").ajaxSubmit(function(data){
-        //         console.log(data);
-        // })
-        return flag;
+        return ret;
       };
 
 

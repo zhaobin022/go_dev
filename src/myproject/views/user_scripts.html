@@ -9,6 +9,9 @@
 <!-- Layer  -->
 <script src="/static/bower_components/layer-v3.1.1/layer/layer.js"></script>
 
+<!-- AdminLTE App -->
+<script src="/static/dist/js/adminlte.min.js"></script>
+
 <script>
 
 function initHearder(){
@@ -56,7 +59,7 @@ totalpages 4
     };
   });
   pageHtml+='<li name="page" value="'+pageMap.lastpage+'"><a href="#">»</a></li>';
-  pageHtml+='<li><a href="#">总'+pageMap.totalpages+'页</a></li>';
+  pageHtml+='<li><a href="#">共'+pageMap.totalpages+'页</a></li>';
   $("#page").append(pageHtml);
 }
 
@@ -101,7 +104,7 @@ function initBody(page){
           };
         });
         var td = document.createElement("td");
-        $(td).html('<div class="btn-group"><button class="btn btn-primary btn-xs" name="edit"><i class="fa fa-pencil"></i> 编辑</button></div>').appendTo(tr);
+        $(td).html('<div class="btn-group"><button class="btn btn-primary btn-xs" name="edit"><i class="fa fa-pencil"></i> 编辑</button></div>&nbsp;&nbsp;&nbsp;<div class="btn-group"><button class="btn btn-primary btn-xs" name="changePass"><i class="fa fa-fw fa-unlock-alt"></i> 修改密码</button></div>').appendTo(tr);
         $("tbody").append(tr);
       });
        
@@ -282,6 +285,7 @@ function bindSearch() {
 
 
 function bindSearchClear(){
+  
   $("#btnClearSearch").bind("click",function(){
     $("[name='susername']").val("");
     initTable(1);
@@ -293,9 +297,7 @@ function bindEditEvent(){
   $(document).on("click","body [name='edit']",function(){
       var userId = $(this).parent().parent().prev().prev().prev().text();
       userId = parseInt(userId);
-      console.log(userId);
       var url = '/useredit/'+userId;
-      console.log(url);
       var title = "编辑用户";
       layer.open({
         type: 2,
@@ -304,14 +306,14 @@ function bindEditEvent(){
         shade: 0.2,
         maxmin: true,
         shift: 1,
-        area: ['1000px', '380px'],
+        area: ['1000px', '350px'],
         content: url,
         btn: ['保存', '关闭'],
         yes: function (index, layero) {
              var iframeWin = window[layero.find('iframe')[0]['name']];
               var ret = iframeWin.FormSubmit();
              //提示层
-             console.log(ret);
+             console.log(ret,111111);
              if (ret.Status) {
                layer.closeAll();
                 layer.msg('添加成功');
@@ -328,6 +330,38 @@ function bindEditEvent(){
 }
 
 
+function bindChangePassword() {
+  var title = "修改用户密码";
+  $(document).on("click","body [name='changePass']",function(){
+    var userId =  $(this).parentsUntil("tr")
+    var url = "/changepass/13"
+    layer.open({
+      type: 2,
+      title: title,
+      shadeClose: false,
+      shade: 0.2,
+      maxmin: true,
+      shift: 1,
+      area: ['400px', '400px'],
+      content: url,
+      btn: ['保存', '关闭'],
+      yes: function (index, layero) {
+          var iframeWin = window[layero.find('iframe')[0]['name']];
+            var ret = iframeWin.FormSubmit();
+          if (ret.Status) {
+            layer.closeAll();
+              initTable(1);
+          } else {
+              layer.msg(ret.Msg, {icon: 5});
+          }
+      }
+      });
+
+    });
+ 
+};
+
+
 function bindEvents() {
   bindRefreshButton();
   bindDeleteEvent();
@@ -337,6 +371,7 @@ function bindEvents() {
   bindSearch();
   bindSearchClear();
   bindEditEvent();
+  bindChangePassword();
 };
 
 

@@ -12,8 +12,6 @@ import (
 	"github.com/astaxie/beego/orm"
 )
 
-
-
 type MainController struct {
 	BaseControl
 }
@@ -96,7 +94,7 @@ type UserPage struct {
 }
 
 func (this *UserApiController) Get() {
-	var pageSize int = 2
+	var pageSize int = 5
 	pageStr := this.GetString("page")
 	username := this.GetString("username")
 	user := new(User)
@@ -409,6 +407,7 @@ func (this *UserEditController) Post() {
 		user := new(User)
 		o := orm.NewOrm()
 		user.Id = userId
+
 		// 获取 QuerySeter 对象，user 为表名
 		err := o.Read(user)
 
@@ -533,10 +532,14 @@ func (this *UserEditController) Post() {
 				}
 			}
 		}
+		fmt.Println(user, "88888888888888888")
+		if num, err := o.Update(user); err == nil {
+			fmt.Println(num)
+		}
 
 		if err != nil {
 			res.Status = false
-			res.Err["all"] = "添加用户失败"
+			res.Err["all"] = "更改用户失败"
 			this.Data["json"] = res
 			return
 		} else {
@@ -552,4 +555,98 @@ func (this *UserEditController) Post() {
 		this.Data["json"] = res
 		return
 	}
+}
+
+type ChangePassController struct {
+	BaseControl
+}
+
+type ChangPassRespone struct {
+	Status bool
+	Msg    string
+}
+
+func (this *ChangePassController) Get() {
+	this.TplName = "change_pass.html"
+	userIdStr := this.Ctx.Input.Param(":id")
+	userId, err := strconv.ParseInt(userIdStr, 10, 64)
+	if err != nil {
+		fmt.Println("parse user id failed !")
+		return
+	}
+	fmt.Println(userIdStr, 222222222222222222)
+	o := orm.NewOrm()
+	user := new(User)
+	user.Id = userId
+	err = o.Read(user)
+	if err != nil {
+		fmt.Println("read uesr error ")
+	}
+	this.Data["user"] = user
+}
+
+func (this *ChangePassController) Put() {
+	defer this.ServeJSON()
+	resp := &ChangPassRespone{}
+	var userReq = new(UserAddRequest)
+	userIdStr := this.Ctx.Input.Param(":id")
+	userId, err := strconv.ParseInt(userIdStr, 10, 64)
+	if err != nil {
+		resp.Status = false
+		resp.Msg = "传参错误"
+		this.Data["json"] = resp
+		fmt.Println(resp.Msg)
+		return
+	}
+	o := orm.NewOrm()
+	user := new(User)
+	user.Id = userId
+	err = o.Read(user)
+	if err != nil {
+		resp.Status = false
+		resp.Msg = "传参错误"
+		this.Data["json"] = resp
+		fmt.Println(resp.Msg)
+		return
+	}
+	if err := json.Unmarshal(this.Ctx.Input.RequestBody, &userReq); err != nil {
+
+		resp.Status = false
+		resp.Msg = "专参错误"
+		this.Data["json"] = resp
+		fmt.Println(resp.Msg)
+		return
+	}
+
+	if userReq.Password1 == "" || userReq.Password2 == "" {
+		resp.Status = false
+		resp.Msg = "密码不能为空"
+		this.Data["json"] = resp
+		fmt.Println(resp.Msg)
+		return
+	}
+
+	if userReq.Password1 != userReq.Password2 {
+		resp.Status = false
+		resp.Msg = "两次输入密码不同"
+		fmt.Println(resp.Msg)
+		this.Data["json"] = resp
+		return
+	}
+	encryPassFormt := GetEncryPass(userReq.Password1)
+	user.Password = encryPassFormt
+	_, err = o.Update(user)
+	if err != nil {
+		resp.Status = false
+		resp.Msg = "更新密码失败"
+		fmt.Println(resp.Msg)
+		this.Data["json"] = resp
+		return
+	}
+	fmt.Println(user, userReq, 1111111111111111)
+
+	resp.Status = true
+	resp.Msg = "更新密码成功"
+	this.Data["json"] = resp
+	return
 }
