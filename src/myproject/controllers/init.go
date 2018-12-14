@@ -83,8 +83,28 @@ func a() {
 
 }
 
+type Response struct {
+	Status bool
+	Msg    string
+}
+
+type BaseControl struct {
+	beego.Controller
+}
+
+func (this *BaseControl) Prepare() {
+	var username = this.GetSession("username")
+	if username != "" {
+		this.Data["username"] = username
+	}
+}
+
 func init() {
 
 	beego.AddFuncMap("IfPermInUser", IfPermInUser)
 	beego.AddFuncMap("IfRoleInUser", IfRoleInUser)
+	beego.AddFuncMap("IfUserInRole", IfUserInRole)
+	beego.AddFuncMap("IfPermInRole", IfPermInRole)
+	beego.AddFuncMap("IfUserInPermission", IfUserInPermission)
+	beego.AddFuncMap("IfRoleInPerm", IfRoleInPerm)
 }

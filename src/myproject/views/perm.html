@@ -1,0 +1,77 @@
+<div class="content-wrapper" style="min-height: 916px;">
+  <!-- Content Header (Page header) -->
+  <section class="content-header">
+    <h1>
+        用户管理
+      <small>用户管理</small>
+    </h1>
+    <ol class="breadcrumb">
+      <li><a href="#"><i class="fa fa-dashboard"></i> 首页</a></li>
+      <li><a href="#">权限管理</a></li>
+      <li class="active">用户管理</li>
+    </ol>
+  </section>
+
+  <!-- Main content -->
+  <section class="content">
+      <div class="row">
+          <div class="col-md-12">
+          <div class="box">
+              <div class="box-body">
+                <div class="row">
+                  <div class="col-xs-3">
+                    <input name="susername" type="text" class="form-control" placeholder="用户名">
+                  </div>
+                  <div class="col-xs-3">
+                    <input type="text" class="form-control" placeholder="邮箱">
+                  </div>
+                  <div class="btn-group">
+                      <button type="button" class="btn btn-warning" id="btnSearch"><i class="fa fa-search"></i> 搜索</button>
+                      <button type="button" class="btn btn-default" id="btnClearSearch"><i class="fa fa-eraser"></i> 清除</button>
+                  </div>
+                </div>
+              </div>
+              <!-- /.box-body -->
+            </div>
+          </div>
+          <div class="col-md-12">
+
+            
+            <div class="box">
+              <div class="box-header with-border">
+                  <div class="btn-group" id="toolbar">
+                  
+                      <button id="add" class="btn btn-info" href="javascript:;">
+                              <i class="fa fa-plus"></i>添加</button>
+                        
+                                      
+                      <button id="delete" class="btn btn-danger table-btn-check-enable" disabled="disabled">
+                              <i class="fa fa-trash"></i>删除</button>
+                        
+                  </div>
+                  <div class="columns columns-right btn-group pull-right">
+                    <button class="btn btn-default" type="button" name="refresh" aria-label="refresh" title="刷新">
+                      <i class="glyphicon glyphicon-refresh icon-refresh"></i>
+                    </button>
+              </div>
+              <!-- /.box-header -->
+              <div class="box-body">
+                <table class="table table-bordered">
+                  <tbody>
+                </tbody>
+              </table>
+              </div>
+              <!-- /.box-body -->
+              <div class="box-footer clearfix">
+                <ul id="page" class="pagination pagination-sm no-margin pull-right">
+                </ul>
+              </div>
+            </div>
+            <!-- /.box -->
+          </div>
+          <!-- /.col -->
+        </div>
+    <!-- /.row -->
+  </section>
+  <!-- /.content -->
+</div>

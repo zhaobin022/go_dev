@@ -1,12 +1,12 @@
 <ul class="sidebar-menu tree" data-widget="tree">
     <li class="header">MAIN NAVIGATION</li>
-    {{if .IsUser}}
+    {{if .Perm}}
     <li class="active treeview menu-open">
     {{ else }}
     <li class="treeview">
     {{ end }}
       <a href="#">
-        <i class="fa fa-dashboard"></i> <span>权限管理</span>
+        <i class="fa fa-vcard"></i> <span>权限管理</span>
         <span class="pull-right-container">
           <i class="fa fa-angle-left pull-right"></i>
         </span>
@@ -20,11 +20,25 @@
             <a href="{{urlfor "UserController.Get"}}">
             <i class="fa fa-user"></i>用户管理</a>
         </li>
-        
-        <li><a href="index.html"><i class="fa fa-users"></i>角色管理</a></li>
+      {{ if .IsRole }}
+      <li class="active">
+          {{else}}
+          <li>
+        {{ end }}
+          <a href="{{urlfor "RoleController.Get"}}">
+            <i class="fa fa-users"></i>角色管理
+          </a>
+        </li>
+
+        {{ if .IsPermssion }}
+        <li class="active">
+            {{else}}
+            <li>
+          {{ end }}
+            <a href="{{urlfor "PermissionController.Get"}}">
+              <i class="fa fa-user-circle-o"></i>权限管理
+            </a>
+          </li>
       </ul>
     </li>
-    
-          
-
 </ul>

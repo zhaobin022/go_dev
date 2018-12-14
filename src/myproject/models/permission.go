@@ -6,6 +6,7 @@ type Permission struct {
 	Id      int64
 	Name    string `orm:"unique"`
 	Comment string
+	Url     string  `orm:"unique"`
 	User    []*User `orm:"reverse(many)"`
 	Role    []*Role `orm:"reverse(many)"`
 }

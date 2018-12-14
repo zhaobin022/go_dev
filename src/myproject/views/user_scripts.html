@@ -78,7 +78,7 @@ function initBody(page){
   requestDict["username"] = username;
   $.ajax({ 
     type : "get", 
-    url : '{{urlfor "UserApiController.Get"}}', 
+    url : '{{urlfor "UserController.Get"}}', 
     // async : false, 
     data: requestDict,
     success : function(result){ 
@@ -164,7 +164,7 @@ function deleteIds(){
   var ids = getAllCheckedObj();
   
   $.ajax({
-    url:'{{urlfor "UserApiController.Delete"}}',
+    url:'{{urlfor "UserController.Delete"}}',
     type:"DELETE",
     contentType:"application/json",
     accept : "application/json",
@@ -333,8 +333,8 @@ function bindEditEvent(){
 function bindChangePassword() {
   var title = "修改用户密码";
   $(document).on("click","body [name='changePass']",function(){
-    var userId =  $(this).parentsUntil("tr")
-    var url = "/changepass/13"
+    var userId =  $(this).parent().parent().prev().prev().prev().text();
+    var url = "/changepass/"+userId
     layer.open({
       type: 2,
       title: title,

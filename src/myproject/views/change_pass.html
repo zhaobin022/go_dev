@@ -131,6 +131,7 @@
             url : '/changepass/'+userId, 
             data:JSON.stringify(request),
             success : function(result){
+              console.log(result);
                 ret = result;
             }
         }); 
