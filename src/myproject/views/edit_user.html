@@ -80,7 +80,7 @@
                     <label>权限</label>
                     <select id="permission" class="form-control select2" multiple="multiple" data-placeholder="请选择权限" style="width: 100%;">
                     {{range .permissions }}
-                        {{ if IfPermInUser .Id $.user}}
+                        {{ if IfObjInObjRel . $.user}}
                             <!-- {{if eq .Comment "" }} -->
                             <option selected="selected" data="{{.Id}}"　value="{{.Id}}">{{.Name}}</option>
                             <!-- {{else}}
@@ -101,7 +101,7 @@
                     <label>角色</label>
                     <select id="role" name="role" class="form-control select2" multiple="multiple" data-placeholder="请选择角色" style="width: 100%;">
                     {{range .roles }}
-                        {{ if IfRoleInUser .Id $.user}}
+                        {{ if IfObjInObjRel . $.user}}
                         <option selected="selected" data="{{.Id}}" value="{{.Id}}">{{.Name}}</option>
                         {{else }}
                         <option data="{{.Id}}" value="{{.Id}}">{{.Name}}</option>
