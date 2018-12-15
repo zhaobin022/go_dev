@@ -6,6 +6,18 @@ import (
 	"github.com/astaxie/beego/orm"
 )
 
+var regStruct map[string]interface{}
+
+func GetObjFromStr(name string) (obj interface{}, err error) {
+	obj, ok := regStruct[name]
+	if ok == true {
+		return
+	} else {
+		err = fmt.Errorf("not find struct")
+		return
+	}
+}
+
 func init() {
 	// 需要在init中注册定义的model
 	fmt.Println("init models")
@@ -18,5 +30,8 @@ func init() {
 	orm.RegisterDataBase("default", "mysql", "root:root@tcp(localhost:3306)/test?charset=utf8")
 
 	orm.RunSyncdb("default", false, true)
-
+	regStruct = make(map[string]interface{})
+	regStruct["Permission"] = Permission{}
+	regStruct["Role"] = Role{}
+	regStruct["User"] = User{}
 }

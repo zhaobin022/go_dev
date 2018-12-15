@@ -188,33 +188,21 @@ func (this *RoleAddController) Post() {
 		}
 
 		// 添加用户权限关系
-		m2mP := o.QueryM2M(role, "Permission")
-		for _, permission := range roleReq.Permission {
-			var perm = &Permission{}
-			perm.Id = permission.Id
-			err := o.Read(perm)
-			if err != nil {
-				continue
+		if len(roleReq.Permission) > 0 {
+			var relObjSlice []interface{} = make([]interface{}, len(roleReq.Permission))
+			for index, permission := range roleReq.Permission {
+				relObjSlice[index] = permission
 			}
-			num, err := m2mP.Add(perm)
-			if err != nil {
-				fmt.Println("add permisseion", num)
-			}
+			AddObjRel(role, relObjSlice)
 		}
-		// 添加用户角色
 
-		for _, user := range roleReq.User {
-			var u = &User{}
-			u.Id = user.Id
-			err := o.Read(u)
-			if err != nil {
-				continue
+		// 添加用户角色
+		if len(roleReq.User) > 0 {
+			var relObjSlice []interface{} = make([]interface{}, len(roleReq.User))
+			for index, user := range roleReq.User {
+				relObjSlice[index] = user
 			}
-			m2mR := o.QueryM2M(role, "User")
-			num, err := m2mR.Add(u)
-			if err != nil {
-				fmt.Println("add user", num)
-			}
+			AddObjRel(role, relObjSlice)
 		}
 
 		if err != nil {
@@ -327,50 +315,88 @@ func (this *RoleEditController) Post() {
 		}
 
 		role.Name = roleReq.Name
-		for _, u := range roleReq.User {
-			err := o.Read(u)
-			if err != nil {
-				continue
-			}
 
-			m2m := o.QueryM2M(role, "User")
-			if !m2m.Exist(u) {
-				m2m.Add(u)
+		if len(roleReq.User) > 0 {
+			var relObjSlice []interface{} = make([]interface{}, len(roleReq.User))
+			for index, user := range roleReq.User {
+				relObjSlice[index] = user
 			}
+			AddObjRel(role, relObjSlice)
 		}
 
-		for _, p := range roleReq.Permission {
-			err := o.Read(p)
-			if err != nil {
-				continue
+		if len(roleReq.Permission) > 0 {
+			var relObjSlice []interface{} = make([]interface{}, len(roleReq.Permission))
+			for index, permission := range roleReq.Permission {
+				relObjSlice[index] = permission
 			}
-
-			m2m := o.QueryM2M(role, "Permission")
-			if !m2m.Exist(p) {
-				m2m.Add(p)
-			}
+			AddObjRel(role, relObjSlice)
 		}
+
+		/*
+			for _, u := range roleReq.User {
+				err := o.Read(u)
+				if err != nil {
+					continue
+				}
+
+				m2m := o.QueryM2M(role, "User")
+				if !m2m.Exist(u) {
+					m2m.Add(u)
+				}
+			}
+			for _, p := range roleReq.Permission {
+				err := o.Read(p)
+				if err != nil {
+					continue
+				}
+
+				m2m := o.QueryM2M(role, "Permission")
+				if !m2m.Exist(p) {
+					m2m.Add(p)
+				}
+			}
+		*/
+
 		_, err = o.LoadRelated(role, "User")
 		if err != nil {
 			fmt.Println("load rel user failed !")
-		}
-		for _, u := range role.User {
-			flag := false
-			for _, user := range roleReq.User {
-				if user.Id == u.Id {
-					flag = true
-					break
-				}
-			}
-			if flag == false {
-				m2m := o.QueryM2M(role, "User")
-				num, err := m2m.Remove(u)
-				if err == nil {
-					fmt.Println("Removed nums: ", num)
-				}
-			}
+			return
 		}
 
+		var relObjSlice []interface{} = make([]interface{}, len(role.User))
+		for index, user := range role.User {
+			relObjSlice[index] = user
+		}
+
+		var reqRelObjSlice []interface{} = make([]interface{}, len(roleReq.User))
+		for index, user := range roleReq.User {
+			reqRelObjSlice[index] = user
+		}
+
+		DelObjRel(role, relObjSlice, reqRelObjSlice)
+		/*
+			_, err = o.LoadRelated(role, "User")
+			if err != nil {
+				fmt.Println("load rel user failed !")
+			}
+
+			for _, u := range role.User {
+				flag := false
+				for _, user := range roleReq.User {
+					if user.Id == u.Id {
+						flag = true
+						break
+					}
+				}
+				if flag == false {
+					m2m := o.QueryM2M(role, "User")
+					num, err := m2m.Remove(u)
+					if err == nil {
+						fmt.Println("Removed nums: ", num)
+					}
+				}
+			}
+		*/
 		_, err = o.LoadRelated(role, "Permission")
 		if err != nil {
 			fmt.Println("load rel permission failed !")

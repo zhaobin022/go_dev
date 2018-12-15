@@ -83,8 +83,6 @@ func a() {
 
 }
 
-var regStruct map[string]interface{}
-
 type Response struct {
 	Status bool
 	Msg    string
@@ -95,6 +93,7 @@ type BaseControl struct {
 }
 
 func (this *BaseControl) Prepare() {
+
 	var username = this.GetSession("username")
 	if username != "" {
 		this.Data["username"] = username
@@ -102,14 +101,5 @@ func (this *BaseControl) Prepare() {
 }
 
 func init() {
-	regStruct = make(map[string]interface{})
-	regStruct["Permission"] = Permission{}
-	regStruct["Role"] = Role{}
-
-	// beego.AddFuncMap("IfPermInUser", IfPermInUser)
-	// beego.AddFuncMap("IfRoleInUser", IfRoleInUser)
-	// beego.AddFuncMap("IfUserInRole", IfUserInRole)
-	// beego.AddFuncMap("IfPermInRole", IfPermInRole)
-	// beego.AddFuncMap("IfUserInPermission", IfUserInPermission)
 	beego.AddFuncMap("IfObjInObjRel", IfObjInObjRel)
 }

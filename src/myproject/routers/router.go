@@ -19,7 +19,7 @@ var CheckLogin = func(ctx *context.Context) {
 }
 
 func init() {
-
+	
 	// beego.InsertFilter("/*", beego.BeforeRouter, CheckLogin)
 	beego.Router("/", &controllers.MainController{})
 	beego.Router("/login", &controllers.LoginController{})
