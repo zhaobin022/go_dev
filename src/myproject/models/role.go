@@ -22,6 +22,7 @@ func getStructName(obj interface{}) {
 	typeName := typeSlice[len(typeSlice)-1]
 }
 */
+
 func ClearObjRel(obj interface{}, structName string) {
 	o := orm.NewOrm()
 	m2m := o.QueryM2M(obj, structName)
@@ -82,40 +83,6 @@ func SyncObjRel(obj, reqRelObj interface{}, structName string) (err error) {
 	return
 }
 
-/*
-func AddObjRel(obj interface{}, relObjSlice []interface{}) (err error) {
-	relObj := relObjSlice[0]
-	objType := reflect.TypeOf(relObj)
-	typeSlice := strings.Split(objType.String(), ".")
-	typeName := typeSlice[len(typeSlice)-1]
-	o := orm.NewOrm()
-	m2m := o.QueryM2M(obj, typeName)
-	for _, temprelobj := range relObjSlice {
-		getValue := reflect.ValueOf(temprelobj).Elem()
-		id := getValue.FieldByName("Id").Int()
-		//create struct
-		objStruct, err := GetObjFromStr(typeName)
-		t := reflect.ValueOf(objStruct).Type()
-		relobjPtr := reflect.New(t)
-		relobj := relobjPtr.Elem()
-		relobj.FieldByName("Id").SetInt(id)
-
-		err = o.Read(relobjPtr.Interface())
-		if err != nil {
-			continue
-		}
-
-		if !m2m.Exist(relobjPtr.Interface()) {
-			_, err = m2m.Add(relobjPtr.Interface())
-			if err != nil {
-				continue
-			}
-		}
-	}
-	return
-}
-*/
-
 func AddObjRel(obj, relObjSlice interface{}) (err error) {
 	o := orm.NewOrm()
 
@@ -140,11 +107,12 @@ func AddObjRel(obj, relObjSlice interface{}) (err error) {
 		relobjPtr := reflect.New(t)
 		relobj := relobjPtr.Elem()
 		relobj.FieldByName("Id").SetInt(id)
-
+		//效验实例
 		err = o.Read(relobjPtr.Interface())
 		if err != nil {
 			continue
 		}
+		//更新关系表
 		m2m := o.QueryM2M(obj, typeName)
 		if !m2m.Exist(relobjPtr.Interface()) {
 			_, err = m2m.Add(relobjPtr.Interface())
@@ -152,6 +120,42 @@ func AddObjRel(obj, relObjSlice interface{}) (err error) {
 				continue
 			}
 		}
+	}
+	return
+}
+
+func DelObjAndRel(obj interface{}, relNameSlice *[]string, ids *[]int) (err error) {
+
+	objType := reflect.TypeOf(obj)
+	objSlice := reflect.MakeSlice(reflect.SliceOf(objType), 0, 0)
+	x := reflect.New(objSlice.Type())
+	x.Elem().Set(objSlice)
+	o := orm.NewOrm()
+	_, err = o.QueryTable(obj).Filter("Id__in", ids).All(x.Interface())
+	if err != nil {
+		return
+	}
+
+	slice := x.Elem().Slice(0, x.Elem().Len())
+
+	for i := 0; i < slice.Len(); i++ {
+		v := slice.Index(i)
+		for _, name := range *relNameSlice {
+			m2m := o.QueryM2M(v.Interface(), name)
+			nums, err := m2m.Clear()
+			if err == nil {
+				fmt.Println("Removed obj Nums: ", nums)
+			} else {
+				fmt.Println(err)
+				return err
+			}
+
+		}
+		_, err = o.Delete(v.Interface())
+		if err != nil {
+			return
+		}
+
 	}
 	return
 }
