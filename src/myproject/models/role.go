@@ -15,68 +15,74 @@ type Role struct {
 	Permission []*Permission `orm:"rel(m2m)"`
 }
 
-func DelObjRel(obj interface{}, relObjSlice, reqRelObjSlice []interface{}) (err error) {
-	// obj role relobj User Slice
-	relObj := relObjSlice[0]
-	objType := reflect.TypeOf(relObj)
+/*
+func getStructName(obj interface{}) {
+	objType := reflect.TypeOf(obj)
 	typeSlice := strings.Split(objType.String(), ".")
 	typeName := typeSlice[len(typeSlice)-1]
+}
+*/
+func ClearObjRel(obj interface{}, structName string) {
 	o := orm.NewOrm()
-	if len(reqRelObjSlice) == 0 {
-		m2m := o.QueryM2M(obj, typeName)
-		nums, err := m2m.Clear()
-		if err == nil {
-			fmt.Println("Removed Tag Nums: ", nums)
-		}
-	} else {
-		for _, tempobj := range relObjSlice {
-			flag := false
-			objValue := reflect.ValueOf(tempobj).Elem()
-			objId := objValue.FieldByName("Id").Int()
-			for _, reqObj := range reqRelObjSlice {
-				reqObjValue := reflect.ValueOf(reqObj).Elem()
-				reqObjId := reqObjValue.FieldByName("Id").Int()
-				if objId == reqObjId {
-					flag = true
-					break
-				}
+	m2m := o.QueryM2M(obj, structName)
+	nums, err := m2m.Clear()
+	if err == nil {
+		fmt.Println("Removed obj rel: ", nums)
+	}
+}
+
+func SyncObjRel(obj, reqRelObj interface{}, structName string) (err error) {
+
+	o := orm.NewOrm()
+	_, err = o.LoadRelated(obj, structName)
+	if err != nil {
+		fmt.Println("load rel obj failed !")
+	}
+	objValue := reflect.ValueOf(obj).Elem()
+	relObjSliceValue := objValue.FieldByName(structName)
+	reqRelObjSliceValue := reflect.ValueOf(reqRelObj)
+	if relObjSliceValue.Len() == 0 && reqRelObjSliceValue.Len() == 0 {
+		return
+	}
+
+	if relObjSliceValue.Len() > 0 && reqRelObjSliceValue.Len() == 0 {
+		ClearObjRel(obj, structName)
+		return
+	}
+
+	AddObjRel(obj, reqRelObj)
+
+	// m2m := o.QueryM2M(obj, typeName)
+
+	relObjSlice := relObjSliceValue.Slice(0, relObjSliceValue.Len())
+	reqRelObjSlice := reqRelObjSliceValue.Slice(0, reqRelObjSliceValue.Len())
+
+	for i := 0; i < relObjSlice.Len(); i++ {
+		var flag = false
+		v := relObjSlice.Index(i)
+		id := v.Elem().FieldByName("Id").Int()
+		for j := 0; j < reqRelObjSlice.Len(); j++ {
+			z := reqRelObjSlice.Index(j)
+			reqId := z.Elem().FieldByName("Id").Int()
+			if id == reqId {
+				flag = true
+				break
 			}
-			if flag == false {
-				m2m := o.QueryM2M(obj, typeName)
-				num, err := m2m.Remove(tempobj)
-				if err == nil {
-					fmt.Println("Removed nums: ", num)
-				}
+		}
+
+		if flag == false {
+			m2m := o.QueryM2M(obj, structName)
+			num, err := m2m.Remove(v.Interface())
+			if err == nil {
+				fmt.Println("Removed nums: ", num)
 			}
 		}
 
 	}
-
-	/*
-		_, err = o.LoadRelated(role, "User")
-			if err != nil {
-				fmt.Println("load rel user failed !")
-			}
-			for _, u := range role.User {
-				flag := false
-				for _, user := range roleReq.User {
-					if user.Id == u.Id {
-						flag = true
-						break
-					}
-				}
-				if flag == false {
-					m2m := o.QueryM2M(role, "User")
-					num, err := m2m.Remove(u)
-					if err == nil {
-						fmt.Println("Removed nums: ", num)
-					}
-				}
-			}
-	*/
 	return
 }
 
+/*
 func AddObjRel(obj interface{}, relObjSlice []interface{}) (err error) {
 	relObj := relObjSlice[0]
 	objType := reflect.TypeOf(relObj)
@@ -99,6 +105,47 @@ func AddObjRel(obj interface{}, relObjSlice []interface{}) (err error) {
 			continue
 		}
 
+		if !m2m.Exist(relobjPtr.Interface()) {
+			_, err = m2m.Add(relobjPtr.Interface())
+			if err != nil {
+				continue
+			}
+		}
+	}
+	return
+}
+*/
+
+func AddObjRel(obj, relObjSlice interface{}) (err error) {
+	o := orm.NewOrm()
+
+	getValue := reflect.ValueOf(relObjSlice)
+	if getValue.Len() == 0 {
+		return
+	}
+
+	slice := getValue.Slice(0, getValue.Len())
+
+	for i := 0; i < slice.Len(); i++ {
+		v := slice.Index(i)
+		//获取对象名
+		objType := v.Type()
+		typeSlice := strings.Split(objType.String(), ".")
+		typeName := typeSlice[len(typeSlice)-1]
+
+		id := v.Elem().FieldByName("Id").Int()
+		//create struct
+		objStruct, err := GetObjFromStr(typeName)
+		t := reflect.ValueOf(objStruct).Type()
+		relobjPtr := reflect.New(t)
+		relobj := relobjPtr.Elem()
+		relobj.FieldByName("Id").SetInt(id)
+
+		err = o.Read(relobjPtr.Interface())
+		if err != nil {
+			continue
+		}
+		m2m := o.QueryM2M(obj, typeName)
 		if !m2m.Exist(relobjPtr.Interface()) {
 			_, err = m2m.Add(relobjPtr.Interface())
 			if err != nil {

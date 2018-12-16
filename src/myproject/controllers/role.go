@@ -188,22 +188,9 @@ func (this *RoleAddController) Post() {
 		}
 
 		// 添加用户权限关系
-		if len(roleReq.Permission) > 0 {
-			var relObjSlice []interface{} = make([]interface{}, len(roleReq.Permission))
-			for index, permission := range roleReq.Permission {
-				relObjSlice[index] = permission
-			}
-			AddObjRel(role, relObjSlice)
-		}
-
+		AddObjRel(role, roleReq.Permission)
 		// 添加用户角色
-		if len(roleReq.User) > 0 {
-			var relObjSlice []interface{} = make([]interface{}, len(roleReq.User))
-			for index, user := range roleReq.User {
-				relObjSlice[index] = user
-			}
-			AddObjRel(role, relObjSlice)
-		}
+		AddObjRel(role, roleReq.User)
 
 		if err != nil {
 			res.Status = false
@@ -316,22 +303,28 @@ func (this *RoleEditController) Post() {
 
 		role.Name = roleReq.Name
 
-		if len(roleReq.User) > 0 {
-			var relObjSlice []interface{} = make([]interface{}, len(roleReq.User))
-			for index, user := range roleReq.User {
-				relObjSlice[index] = user
+		SyncObjRel(role, roleReq.User, "User")
+		// var i interface{} = roleReq.User
+		// for _,j := range i{
+		// 	fmt.Println(j)
+		// }
+		/*
+			if len(roleReq.User) > 0 {
+				var relObjSlice []interface{} = make([]interface{}, len(roleReq.User))
+				for index, user := range roleReq.User {
+					relObjSlice[index] = user
+				}
+				AddObjRel(role, relObjSlice)
 			}
-			AddObjRel(role, relObjSlice)
-		}
 
-		if len(roleReq.Permission) > 0 {
-			var relObjSlice []interface{} = make([]interface{}, len(roleReq.Permission))
-			for index, permission := range roleReq.Permission {
-				relObjSlice[index] = permission
+			if len(roleReq.Permission) > 0 {
+				var relObjSlice []interface{} = make([]interface{}, len(roleReq.Permission))
+				for index, permission := range roleReq.Permission {
+					relObjSlice[index] = permission
+				}
+				AddObjRel(role, relObjSlice)
 			}
-			AddObjRel(role, relObjSlice)
-		}
-
+		*/
 		/*
 			for _, u := range roleReq.User {
 				err := o.Read(u)
@@ -357,23 +350,18 @@ func (this *RoleEditController) Post() {
 			}
 		*/
 
-		_, err = o.LoadRelated(role, "User")
-		if err != nil {
-			fmt.Println("load rel user failed !")
-			return
-		}
+		/*
+			var relObjSlice []interface{} = make([]interface{}, len(role.User))
+			for index, user := range role.User {
+				relObjSlice[index] = user
+			}
 
-		var relObjSlice []interface{} = make([]interface{}, len(role.User))
-		for index, user := range role.User {
-			relObjSlice[index] = user
-		}
-
-		var reqRelObjSlice []interface{} = make([]interface{}, len(roleReq.User))
-		for index, user := range roleReq.User {
-			reqRelObjSlice[index] = user
-		}
-
-		DelObjRel(role, relObjSlice, reqRelObjSlice)
+			var reqRelObjSlice []interface{} = make([]interface{}, len(roleReq.User))
+			for index, user := range roleReq.User {
+				reqRelObjSlice[index] = user
+			}
+		*/
+		// DelObjRel(role, role.User, roleReq.User)
 		/*
 			_, err = o.LoadRelated(role, "User")
 			if err != nil {
