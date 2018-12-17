@@ -1,6 +1,14 @@
 (function (jq) {
     var CONFIG = {};
 
+
+    String.prototype.format = function (args) {
+        return this.replace(/\{(\w+)\}/g, function (s, i) {
+            return args[i];
+        });
+    };
+
+
     function initHearder(){
     $("tbody").empty();
         var header=CONFIG.TABLE.HEADER;
@@ -51,34 +59,54 @@
 
 
     function initBody(page){
-    var l = CONFIG.TABLE.BODY;
-    var requestDict = {}
-    requestDict["page"] = page;
-    $.each(CONFIG.SEARCH, function(k,v){
-        requestDict[v] = getSearchVal(v);
-    });
-    $.ajax({ 
-        type : "get", 
-        url : CONFIG.URL.CONTROL_GET, 
-        data: requestDict,
-        success : function(result){ 
-        $.each(result.PermssionSlice,function(index,data){
-            var tr = document.createElement("tr");
-            var td = document.createElement("td");
-            $(td).html('<input name="btSelect" value="'+data.Id+'" type="checkbox">').appendTo(tr);
-            $.each(l,function(k,v){
-            var td = document.createElement("td")
-            $(td).text(data[v]).appendTo(tr);
-            });
-            var td = document.createElement("td");
-            $(td).html('<div class="btn-group"><button class="btn btn-primary btn-xs" name="edit"><i class="fa fa-pencil"></i> 编辑</button></div>').appendTo(tr);
-            $("tbody").append(tr);
+        var l = CONFIG.TABLE.BODY;
+        var requestDict = {}
+        requestDict["page"] = page;
+        $.each(CONFIG.SEARCH, function(k,v){
+            requestDict[v] = getSearchVal(v);
         });
-        
-        initPage(result.PaginatorMap);
-        closeShadow();
-        }
-    }); 
+
+        $.ajax({ 
+            type : "get", 
+            url : CONFIG.URL.CONTROL_GET, 
+            data: requestDict,
+            success : function(result){ 
+                console.log(result);
+                $.each(result.ObjSlice,function(index,data){
+                    var tr = document.createElement("tr");
+                    var td = document.createElement("td");
+                    $(td).html('<input name="btSelect" value="'+data.Id+'" type="checkbox">').appendTo(tr);
+                    $.each(l,function(k,v){
+                        var td = document.createElement("td")
+                        var type = CONFIG.TABLE.COLUMN[v]["type"]
+                        if (type == "text") {
+                            $(td).text(data[v]).appendTo(tr);
+                        } else if (type=="bool") {
+
+                            console.log(type,data[v],"11111111111111111111111",data,v);
+                            var value = data[v];
+                            if (value == true) {
+                                $(td).html(CONFIG.TABLE.COLUMN[v]["true"]).appendTo(tr);
+                            } else if (value == false) {
+                                $(td).html(CONFIG.TABLE.COLUMN[v]["false"]).appendTo(tr);
+                            }
+                        } else if (type == "template") {
+                            var d = {};
+                            if (CONFIG.TABLE.COLUMN[v]["key"].length > 0 ) {
+                                $.each(CONFIG.TABLE.COLUMN[v]["key"],function(i,key){
+                                    d[key] = data[key];
+                                });
+                            }
+                            $(td).html(CONFIG.TABLE.COLUMN[v]["template"].format(d)).appendTo(tr);
+                        };
+                    });
+                    $("tbody").append(tr);
+                });
+                
+                initPage(result.PaginatorMap);
+                closeShadow();
+            }
+        }); 
     };
 
 
@@ -254,50 +282,50 @@
 
     function bindSearchClear(){
     
-    $("#btnClearSearch").bind("click",function(){
-        $.each(CONFIG.SEARCH, function(k,v){
-        $("[name='"+v+"']").val("");
+        $("#btnClearSearch").bind("click",function(){
+            $.each(CONFIG.SEARCH, function(k,v){
+            $("[name='"+v+"']").val("");
+            });
+            
+            initTable(1);
         });
-        
-        initTable(1);
-    });
     };
 
 
     function bindEditEvent(){
-    $(document).on("click","body [name='edit']",function(){
-        var permId = $(this).parent().parent().prev().prev().prev().prev().text();
-        permId = parseInt(permId);
-        var url = CONFIG.URL.EDIT_CONTROL_GET+permId;
-        var title = CONFIG.TITLES.EDIT_TITLE;
-        layer.open({
-            type: 2,
-            title: title,
-            shadeClose: false,
-            shade: 0.2,
-            maxmin: true,
-            shift: 1,
-            area: ['1000px', '350px'],
-            content: url,
-            btn: ['保存', '关闭'],
-            yes: function (index, layero) {
-                var iframeWin = window[layero.find('iframe')[0]['name']];
-                var ret = iframeWin.FormSubmit();
-                //提示层
-                console.log(ret,111111);
-                if (ret.Status) {
-                layer.closeAll();
-                    layer.msg(ret.Msg);
-                    initTable(1);
-                } else {
-                    layer.msg(ret.Msg, {icon: 5});
+        $(document).on("click","body [name='edit']",function(){
+            var permId = $(this).attr("data");
+            permId = parseInt(permId);
+            var url = CONFIG.URL.EDIT_CONTROL_GET+permId;
+            var title = CONFIG.TITLES.EDIT_TITLE;
+            layer.open({
+                type: 2,
+                title: title,
+                shadeClose: false,
+                shade: 0.2,
+                maxmin: true,
+                shift: 1,
+                area: ['1000px', '350px'],
+                content: url,
+                btn: ['保存', '关闭'],
+                yes: function (index, layero) {
+                    var iframeWin = window[layero.find('iframe')[0]['name']];
+                    var ret = iframeWin.FormSubmit();
+                    //提示层
+                    console.log(ret,111111);
+                    if (ret.Status) {
+                    layer.closeAll();
+                        layer.msg(ret.Msg);
+                        initTable(1);
+                    } else {
+                        layer.msg(ret.Msg, {icon: 5});
+                    }
+                    
+                    
                 }
-                
-                
-            }
-        });
+            });
 
-    });
+        });
     }
 
 

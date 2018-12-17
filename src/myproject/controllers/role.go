@@ -18,7 +18,7 @@ func (this *RoleController) IsAjaxGet() {
 	defer this.ServeJSON()
 	var pageSize int = 5
 	pageStr := this.GetString("page")
-	rolename := this.GetString("rolename")
+	rolename := this.GetString("Name")
 	role := new(Role)
 	o := orm.NewOrm()
 	qs := o.QueryTable(role)
@@ -51,7 +51,7 @@ func (this *RoleController) IsAjaxGet() {
 	if err != nil {
 		fmt.Println(num, err)
 	}
-	rolePage.RoleSlice = roleSlice
+	rolePage.ObjSlice = roleSlice
 	this.Data["json"] = rolePage
 
 }
@@ -99,10 +99,7 @@ func (this *RoleController) Delete() {
 	}
 }
 
-type RolePage struct {
-	PaginatorMap map[string]interface{}
-	RoleSlice    []*Role
-}
+
 
 type RoleAddController struct {
 	BaseControl

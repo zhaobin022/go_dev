@@ -10,10 +10,7 @@ import (
 	"github.com/astaxie/beego/orm"
 )
 
-type PermssionPage struct {
-	PaginatorMap   map[string]interface{}
-	PermssionSlice []*Permission
-}
+
 
 type PermissionController struct {
 	BaseControl
@@ -32,13 +29,11 @@ func (this *PermissionController) IsAjaxGet() {
 
 	if permName != "" {
 		permNameCond := orm.NewCondition()
-		fmt.Println(permNameCond, "111111111111111")
 		qs = qs.SetCond(permNameCond.And("Name__icontains", permName))
 	}
 
 	if url != "" {
 		urlCond := orm.NewCondition()
-		fmt.Println(urlCond, "2222222222222222222222")
 		qs = qs.SetCond(urlCond.And("Url__icontains", url))
 	}
 
@@ -64,8 +59,7 @@ func (this *PermissionController) IsAjaxGet() {
 	if err != nil {
 		fmt.Println(num, err)
 	}
-	fmt.Println(PermssionSlice, "------------------------")
-	permissionPage.PermssionSlice = PermssionSlice
+	permissionPage.ObjSlice = PermssionSlice
 	this.Data["json"] = permissionPage
 }
 

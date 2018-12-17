@@ -31,7 +31,7 @@ type UserController struct {
 func (this *UserController) IsAjaxGet() {
 	var pageSize int = 5
 	pageStr := this.GetString("page")
-	username := this.GetString("username")
+	username := this.GetString("Name")
 	user := new(User)
 	o := orm.NewOrm()
 	qs := o.QueryTable(user)
@@ -64,7 +64,8 @@ func (this *UserController) IsAjaxGet() {
 	if err != nil {
 		fmt.Println(num, err)
 	}
-	userPage.UserSlice = userSlice
+	userPage.ObjSlice = userSlice
+	fmt.Println(userPage, "11111111111111111111111111")
 	this.Data["json"] = userPage
 	this.ServeJSON()
 }
@@ -84,11 +85,6 @@ func (this *UserController) Get() {
 		this.LayoutSections["Css"] = "user_css.html"
 	}
 
-}
-
-type UserPage struct {
-	PaginatorMap map[string]interface{}
-	UserSlice    []*User
 }
 
 func (this *UserController) Delete() {
