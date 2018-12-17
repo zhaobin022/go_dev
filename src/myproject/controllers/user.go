@@ -107,29 +107,9 @@ func (this *UserController) Delete() {
 	}
 
 	var user = new(User)
-	var userSlice []User
-	_, err = o.QueryTable(user).Filter("Id__in", ids).All(&userSlice)
-	for _, v := range userSlice {
-		m2mP := o.QueryM2M(&v, "Permission")
-		nums, err := m2mP.Clear()
-		if err == nil {
-			fmt.Println("Removed permission Nums: ", nums)
-		} else {
-			fmt.Println(err)
-			break
-		}
 
-		m2mR := o.QueryM2M(&v, "Role")
-		nums, err = m2mR.Clear()
-		if err == nil {
-			fmt.Println("Removed role Nums: ", nums)
-		} else {
-			fmt.Println(err)
-			break
-		}
-
-		o.Delete(&v)
-	}
+	var relNameSlice []string = []string{"Permission", "Role"}
+	err = DelObjAndRel(user, relNameSlice, &ids)
 
 	if err != nil {
 		err = o.Rollback()
@@ -200,12 +180,9 @@ func (this *UserAddController) Post() {
 
 		// 获取 QuerySeter 对象，user 为表名
 		qs := o.QueryTable(user)
-		count, err := qs.Filter("Name", userReq.Name).Count()
-		if err != nil {
-			fmt.Println("query count error ", err)
-		}
+		exist := qs.Filter("Name", userReq.Name).Exist()
 
-		if count > 0 {
+		if exist {
 			res.Err["all"] = "用户已存在"
 			res.Status = false
 			this.Data["json"] = res
@@ -222,35 +199,11 @@ func (this *UserAddController) Post() {
 		if err != nil {
 			fmt.Println(err)
 		}
-		// 添加用户权限关系
-		m2mP := o.QueryM2M(user, "Permission")
-		for _, permission := range userReq.Permission {
-			var perm = &Permission{}
-			perm.Id = permission.Id
-			err := o.Read(perm)
-			if err != nil {
-				continue
-			}
-			num, err := m2mP.Add(perm)
-			if err != nil {
-				fmt.Println("add permisseion", num)
-			}
-		}
-		// 添加用户角色
 
-		for _, role := range userReq.Role {
-			var r = &Role{}
-			r.Id = role.Id
-			err := o.Read(r)
-			if err != nil {
-				continue
-			}
-			m2mR := o.QueryM2M(r, "User")
-			num, err := m2mR.Add(user)
-			if err != nil {
-				fmt.Println("add role", num)
-			}
-		}
+		// 添加用户权限关系
+		AddObjRel(user, userReq.Permission)
+		// 添加用户角色
+		AddObjRel(user, userReq.Role)
 
 		if err != nil {
 			res.Status = false
@@ -357,111 +310,11 @@ func (this *UserEditController) Post() {
 		}
 
 		user.IsAdmin = userReq.IsAdmin
+		//更新用户角色关系
+		SyncObjRel(user, userReq.Role, "Role")
+		//更新用户权限关系
+		SyncObjRel(user, userReq.Permission, "Permission")
 
-		// 添加用户权限关系
-		_, err = o.LoadRelated(user, "Role")
-		if err != nil {
-			fmt.Println("load user roles rel failed !")
-		}
-
-		_, err = o.LoadRelated(user, "Permission")
-		if err != nil {
-			fmt.Println("load user permission rel failed !")
-		}
-
-		var roleIdMap map[int64]bool = make(map[int64]bool)
-		for _, role := range user.Role {
-			roleIdMap[role.Id] = true
-		}
-
-		var reqRoleIdMap map[int64]bool = make(map[int64]bool)
-		for _, role := range userReq.Role {
-			reqRoleIdMap[role.Id] = true
-		}
-
-		var permIdMap map[int64]bool = make(map[int64]bool)
-		for _, perm := range user.Permission {
-			permIdMap[perm.Id] = true
-		}
-
-		var reqPermIdMap map[int64]bool = make(map[int64]bool)
-		for _, perm := range userReq.Permission {
-			reqPermIdMap[perm.Id] = true
-		}
-
-		for _, role := range userReq.Role {
-			_, ok := roleIdMap[role.Id]
-			if ok == false {
-				var r = &Role{}
-				r.Id = role.Id
-				err := o.Read(r)
-				if err != nil {
-					continue
-				}
-
-				m2m := o.QueryM2M(r, "User")
-				num, err := m2m.Add(user)
-				if err != nil {
-					fmt.Println("add role", num)
-				}
-			}
-		}
-
-		m2mP := o.QueryM2M(user, "Permission")
-		for _, perm := range userReq.Permission {
-			_, ok := permIdMap[perm.Id]
-			if ok == false {
-				var p = &Permission{}
-				p.Id = perm.Id
-				err := o.Read(p)
-				if err != nil {
-					continue
-				}
-				num, err := m2mP.Add(p)
-				if err != nil {
-					fmt.Println("add perm", num)
-				}
-			}
-		}
-
-		for roleId, _ := range roleIdMap {
-			_, ok := reqRoleIdMap[roleId]
-
-			if ok == false {
-				var r = &Role{}
-				r.Id = roleId
-				err := o.Read(r)
-				if err != nil {
-					continue
-				}
-				m2m := o.QueryM2M(r, "User")
-				num, err := m2m.Remove(user)
-				if err == nil {
-					fmt.Println("Removed nums: ", num)
-				} else {
-					fmt.Println("remove error !", err)
-				}
-			}
-		}
-
-		m2mP = o.QueryM2M(user, "Permission")
-		for permId, _ := range permIdMap {
-			_, ok := reqPermIdMap[permId]
-			if ok == false {
-				var p = &Permission{}
-				p.Id = permId
-				err := o.Read(p)
-				if err != nil {
-					continue
-				}
-				num, err := m2mP.Remove(p)
-				if err == nil {
-					fmt.Println("Removed nums: ", num)
-				} else {
-					fmt.Println("remove err", err)
-				}
-			}
-		}
 		if num, err := o.Update(user); err == nil {
 			fmt.Println(num)
 		}

@@ -124,7 +124,7 @@ func AddObjRel(obj, relObjSlice interface{}) (err error) {
 	return
 }
 
-func DelObjAndRel(obj interface{}, relNameSlice *[]string, ids *[]int) (err error) {
+func DelObjAndRel(obj interface{}, relNameSlice []string, ids *[]int) (err error) {
 
 	objType := reflect.TypeOf(obj)
 	objSlice := reflect.MakeSlice(reflect.SliceOf(objType), 0, 0)
@@ -140,7 +140,7 @@ func DelObjAndRel(obj interface{}, relNameSlice *[]string, ids *[]int) (err erro
 
 	for i := 0; i < slice.Len(); i++ {
 		v := slice.Index(i)
-		for _, name := range *relNameSlice {
+		for _, name := range relNameSlice {
 			m2m := o.QueryM2M(v.Interface(), name)
 			nums, err := m2m.Clear()
 			if err == nil {

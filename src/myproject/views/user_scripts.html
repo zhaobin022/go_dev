@@ -15,6 +15,7 @@
 <script>
 
 function initHearder(){
+  console.log(config);
   $("tbody").empty();
     var tr = document.createElement("tr");
     var td = document.createElement("td");
@@ -213,18 +214,25 @@ function bindCheckBoxEvent(){
 
 
 function checkDeleteButton(){
-  var flag = false
+  var count = 0;
+  var checkedCount = 0;
   $("[name='btSelect']").each(function(){
+    count +=1;
     var isCheck = $(this).prop('checked')
     if (isCheck == true){
-      flag = true;
-      return false;
+      checkedCount+=1;
     };
+
   });
-  if (flag == true) {
-    $("#delete").prop("disabled",false);
-  } else {
+  
+  if (checkedCount == 0) {
     $("#delete").prop("disabled",true);
+  } else {
+    $("#delete").prop("disabled",false);
+  }
+  if (count == checkedCount) {
+    $("[name='btSelectAll']").prop("checked",true);
+  } else {
     $("[name='btSelectAll']").prop("checked",false);
   };
 };
@@ -376,6 +384,8 @@ function bindEvents() {
 
 
 $(function() { 
+
+  　config = "000000000000000000000000000000000000000";
     initTable(1);
     bindEvents();
 });

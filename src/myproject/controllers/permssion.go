@@ -23,15 +23,23 @@ func (this *PermissionController) IsAjaxGet() {
 	defer this.ServeJSON()
 	var pageSize int = 5
 	pageStr := this.GetString("page")
-	permName := this.GetString("permName")
+	permName := this.GetString("Name")
+	url := this.GetString("Url")
+
 	perm := new(Permission)
 	o := orm.NewOrm()
 	qs := o.QueryTable(perm)
 
 	if permName != "" {
 		permNameCond := orm.NewCondition()
-
+		fmt.Println(permNameCond, "111111111111111")
 		qs = qs.SetCond(permNameCond.And("Name__icontains", permName))
+	}
+
+	if url != "" {
+		urlCond := orm.NewCondition()
+		fmt.Println(urlCond, "2222222222222222222222")
+		qs = qs.SetCond(urlCond.And("Url__icontains", url))
 	}
 
 	page, err := strconv.Atoi(pageStr)
@@ -56,6 +64,7 @@ func (this *PermissionController) IsAjaxGet() {
 	if err != nil {
 		fmt.Println(num, err)
 	}
+	fmt.Println(PermssionSlice, "------------------------")
 	permissionPage.PermssionSlice = PermssionSlice
 	this.Data["json"] = permissionPage
 }
@@ -93,30 +102,9 @@ func (this *PermissionController) Delete() {
 	}
 
 	var permission = new(Permission)
-	var permissionSlice []Permission
-	_, err = o.QueryTable(permission).Filter("Id__in", ids).All(&permissionSlice)
-	for _, p := range permissionSlice {
-		m2mP := o.QueryM2M(&p, "User")
-		nums, err := m2mP.Clear()
-		if err == nil {
-			fmt.Println("Removed permission Nums: ", nums)
-		} else {
-			fmt.Println(err)
-			break
-		}
 
-		m2mR := o.QueryM2M(&p, "Role")
-		nums, err = m2mR.Clear()
-		if err == nil {
-			fmt.Println("Removed role Nums: ", nums)
-		} else {
-			fmt.Println(err)
-			break
-		}
-
-		o.Delete(&p)
-	}
-
+	var relNameSlice []string = []string{"User", "Role"}
+	err = DelObjAndRel(permission, relNameSlice, &ids)
 	if err != nil {
 		err = o.Rollback()
 	} else {
@@ -194,35 +182,10 @@ func (this *PermssionAddController) Post() {
 			fmt.Println(err)
 		}
 
-		// 添加用户权限关系
-		m2m := o.QueryM2M(permission, "User")
-		for _, user := range permissionReq.User {
-			var u = &User{}
-			u.Id = user.Id
-			err := o.Read(u)
-			if err != nil {
-				continue
-			}
-			num, err := m2m.Add(u)
-			if err != nil {
-				fmt.Println("add user", num)
-			}
-		}
-		// 添加用户角色
-
-		for _, role := range permissionReq.Role {
-			var r = &Role{}
-			r.Id = role.Id
-			err := o.Read(r)
-			if err != nil {
-				continue
-			}
-			m2mR := o.QueryM2M(permission, "Role")
-			num, err := m2mR.Add(r)
-			if err != nil {
-				fmt.Println("add role", num)
-			}
-		}
+		// 添加权限用户关系
+		AddObjRel(permission, permissionReq.User)
+		// 添加权限角色关系
+		AddObjRel(permission, permissionReq.Role)
 
 		if err != nil {
 			res.Status = false
@@ -307,12 +270,12 @@ func (this *PermissionEditController) Post() {
 	}
 	var permissionReq = new(Permission)
 	if err := json.Unmarshal(this.Ctx.Input.RequestBody, &permissionReq); err == nil {
-		if permissionReq.Name == "" {
-			res.Msg = "权限名不能为空!"
-			res.Status = false
-			this.Data["json"] = res
-			return
-		}
+		// if permissionReq.Name == "" {
+		// 	res.Msg = "权限名不能为空!"
+		// 	res.Status = false
+		// 	this.Data["json"] = res
+		// 	return
+		// }
 
 		if permissionReq.Url == "" {
 			res.Msg = "权限名URL不能为空!"
@@ -341,72 +304,13 @@ func (this *PermissionEditController) Post() {
 			return
 		}
 
-		permission.Name = permissionReq.Name
-		for _, u := range permissionReq.User {
-			err := o.Read(u)
-			if err != nil {
-				continue
-			}
+		permission.Url = permissionReq.Url
 
-			m2m := o.QueryM2M(permission, "User")
-			if !m2m.Exist(u) {
-				m2m.Add(u)
-			}
-		}
+		//更新用户角色关系
+		err = SyncObjRel(permission, permissionReq.Role, "Role")
+		//更新用户权限关系
+		err = SyncObjRel(permission, permissionReq.User, "User")
 
-		for _, r := range permissionReq.Role {
-			err := o.Read(r)
-			if err != nil {
-				continue
-			}
-
-			m2m := o.QueryM2M(permission, "Role")
-			if !m2m.Exist(r) {
-				m2m.Add(r)
-			}
-		}
-		_, err = o.LoadRelated(permission, "User")
-		if err != nil {
-			fmt.Println("load rel user failed !")
-		}
-		for _, u := range permission.User {
-			flag := false
-			for _, user := range permissionReq.User {
-				if user.Id == u.Id {
-					flag = true
-					break
-				}
-			}
-			if flag == false {
-				m2m := o.QueryM2M(permission, "User")
-				num, err := m2m.Remove(u)
-				if err == nil {
-					fmt.Println("Removed nums: ", num)
-				}
-			}
-		}
-
-		_, err = o.LoadRelated(permission, "Role")
-		if err != nil {
-			fmt.Println("load rel permission failed !")
-		}
-
-		for _, r := range permission.Role {
-			flag := false
-			for _, role := range permissionReq.Role {
-				if r.Id == role.Id {
-					flag = true
-					break
-				}
-			}
-			if flag == false {
-				m2m := o.QueryM2M(permission, "Role")
-				num, err := m2m.Remove(r)
-				if err == nil {
-					fmt.Println("Removed nums: ", num)
-				}
-			}
-		}
 		if num, err := o.Update(permission); err == nil {
 			fmt.Println(num)
 		}

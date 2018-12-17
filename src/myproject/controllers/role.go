@@ -91,31 +91,7 @@ func (this *RoleController) Delete() {
 	var role = new(Role)
 	// var roleSlice []Role
 	var relNameSlice []string = []string{"Permission", "User"}
-	err = DelObjAndRel(role, &relNameSlice, &ids)
-	/*
-		_, err = o.QueryTable(role).Filter("Id__in", ids).All(&roleSlice)
-		for _, r := range roleSlice {
-			m2mP := o.QueryM2M(&r, "Permission")
-			nums, err := m2mP.Clear()
-			if err == nil {
-				fmt.Println("Removed permission Nums: ", nums)
-			} else {
-				fmt.Println(err)
-				break
-			}
-
-			m2mR := o.QueryM2M(&r, "User")
-			nums, err = m2mR.Clear()
-			if err == nil {
-				fmt.Println("Removed user Nums: ", nums)
-			} else {
-				fmt.Println(err)
-				break
-			}
-
-			o.Delete(&r)
-		}
-	*/
+	err = DelObjAndRel(role, relNameSlice, &ids)
 	if err != nil {
 		err = o.Rollback()
 	} else {
