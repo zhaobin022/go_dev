@@ -65,12 +65,17 @@
         $.each(CONFIG.SEARCH, function(k,v){
             requestDict[v] = getSearchVal(v);
         });
-
+        var permStatus = false
         $.ajax({ 
             type : "get", 
             url : CONFIG.URL.CONTROL_GET, 
             data: requestDict,
-            success : function(result){ 
+            success : function(result){
+                console.log(result);
+                if (result.PermDeny == true) {
+                    window.location.href="/403"; 
+                    return false;
+                };
                 console.log(result);
                 $.each(result.ObjSlice,function(index,data){
                     var tr = document.createElement("tr");

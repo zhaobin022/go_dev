@@ -5,6 +5,7 @@ import (
 )
 
 type BasePage struct {
+	PermDeny     bool
 	PaginatorMap map[string]interface{}
 }
 

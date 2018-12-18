@@ -102,10 +102,8 @@ func (this *UserController) Delete() {
 	}
 
 	var user = new(User)
-	fmt.Println(ids, "11111111111111111111111111111")
 	var relNameSlice []string = []string{"Permission", "Role"}
 	err = DelObjAndRel(user, relNameSlice, &ids)
-	fmt.Println(err, "000000000000000000000000")
 	if err != nil {
 		err = o.Rollback()
 	} else {

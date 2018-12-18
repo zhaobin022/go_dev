@@ -23,6 +23,7 @@ func (this *LoginController) Post() {
 	} else {
 		this.SetSession(LOGINSESSIONSTR, true)
 		this.SetSession("username", user.Name)
+		this.SetSession("userid", user.Id)
 		this.Ctx.Redirect(302, "/")
 	}
 	this.TplName = "login.html"

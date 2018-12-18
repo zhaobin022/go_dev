@@ -21,7 +21,7 @@ func GetObjFromStr(name string) (obj interface{}, err error) {
 func init() {
 	// 需要在init中注册定义的model
 	fmt.Println("init models")
-	orm.Debug = true
+	orm.Debug = false
 
 	orm.RegisterDriver("mysql", orm.DRMySQL)
 	orm.RegisterModel(new(User), new(Role), new(Permission))

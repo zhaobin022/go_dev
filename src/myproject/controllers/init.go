@@ -3,6 +3,7 @@ package controllers
 import (
 	"fmt"
 	. "myproject/models"
+	"regexp"
 
 	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/orm"
@@ -90,6 +91,10 @@ type Response struct {
 
 type BaseControl struct {
 	beego.Controller
+	PermControl
+}
+
+type PermControl struct {
 }
 
 func (this *BaseControl) Prepare() {
@@ -98,6 +103,59 @@ func (this *BaseControl) Prepare() {
 	if username != "" {
 		this.Data["username"] = username
 	}
+
+	this.CheckPerm()
+}
+
+func (this *BaseControl) CheckPerm() {
+	ctx := this.Ctx
+	userId := ctx.Input.Session("userid")
+	permDenyUrl := beego.URLFor("PermDenyController.Get")
+	loginUrl := beego.URLFor("LoginController.Get")
+	user, err := getUser(userId)
+
+	if err != nil {
+		fmt.Println(ctx.Request.RequestURI, loginUrl, permDenyUrl)
+		if ctx.Request.RequestURI != loginUrl && ctx.Request.RequestURI != permDenyUrl {
+			if ctx.Input.IsAjax() {
+				var basePage *BasePage = &BasePage{}
+				basePage.PermDeny = true
+				this.Data["json"] = basePage
+				this.ServeJSON()
+			} else {
+				ctx.Redirect(302, permDenyUrl)
+			}
+		}
+		return
+	}
+
+	var uri string
+	exp3 := regexp.MustCompile(`(.*)\?.*`)
+	fmt.Println(uri, "888888888")
+	result3 := exp3.FindAllStringSubmatch(ctx.Input.URI(), -1)
+	if len(result3) > 0 {
+		fmt.Println(result3[0], "999999999999999")
+		uri = result3[0][1]
+	} else {
+		uri = ctx.Request.RequestURI
+	}
+
+	fmt.Println(uri, "------------------", ctx.Input.URI())
+	ok := DoPermCheck(user, uri)
+	fmt.Println(ok, "___________________________")
+	if ok == false {
+		if ctx.Request.RequestURI != loginUrl && ctx.Request.RequestURI != permDenyUrl {
+			if ctx.Input.IsAjax() {
+				var basePage *BasePage = &BasePage{}
+				basePage.PermDeny = true
+				this.Data["json"] = basePage
+				this.ServeJSON()
+			} else {
+				ctx.Redirect(302, permDenyUrl)
+			}
+		}
+	}
+	return
 }
 
 func init() {
