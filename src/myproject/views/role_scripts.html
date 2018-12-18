@@ -16,13 +16,34 @@
 <script>
 
 CONFIG = {};
+
+
 CONFIG["TABLE"] = {};
+
+
 CONFIG.TABLE["HEADER"] = ["Id","角色名","操作"];
-CONFIG.TABLE["BODY"] = ["Id","Name"];
+CONFIG.TABLE["BODY"] = ["Id","Name","Operation"];
+
+CONFIG.TABLE["COLUMN"] = {};
+
+CONFIG.TABLE.COLUMN["Id"] = {};
+CONFIG.TABLE.COLUMN.Id["type"] = "text";
+
+CONFIG.TABLE.COLUMN["Name"] = {};
+CONFIG.TABLE.COLUMN.Name["type"] = "text";
+
+CONFIG.TABLE.COLUMN["Operation"] = {};
+CONFIG.TABLE.COLUMN.Operation["type"] = "template";
+CONFIG.TABLE.COLUMN.Operation["template"] = '<div class="btn-group"><button class="btn btn-primary btn-xs" name="edit" data="{Id}"><i class="fa fa-pencil"></i> 编辑</button></div>';
+CONFIG.TABLE.COLUMN.Operation["key"] = ["Id"];
+
+
 CONFIG["URL"] = {};
 CONFIG.URL["CONTROL_GET"] = '{{urlfor "RoleController.Get"}}';
 CONFIG.URL["ADD_CONTROL_GET"] = '{{urlfor "RoleAddController.Get"}}';
 CONFIG.URL["EDIT_CONTROL_GET"] = '/roleedit/';
+CONFIG.URL["CONTROL_DELETE"] = '{{urlfor "RoleController.Delete()"}}';
+
 CONFIG.TITLES = {};
 CONFIG.TITLES["ADD_TITLE"] = '添加角色';
 CONFIG.TITLES["EDIT_TITLE"] = '编辑角色';

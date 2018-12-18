@@ -82,8 +82,6 @@
                         if (type == "text") {
                             $(td).text(data[v]).appendTo(tr);
                         } else if (type=="bool") {
-
-                            console.log(type,data[v],"11111111111111111111111",data,v);
                             var value = data[v];
                             if (value == true) {
                                 $(td).html(CONFIG.TABLE.COLUMN[v]["true"]).appendTo(tr);
@@ -150,20 +148,20 @@
 
 
     function deleteIds(){
-    var ids = getAllCheckedObj();
-    
-    $.ajax({
-        url:'{{urlfor "PermissionController.Delete"}}',
-        type:"DELETE",
-        contentType:"application/json",
-        accept : "application/json",
-        traditional: true,
-        dataType : 'json',
-        data:JSON.stringify(ids),
-        success:function(result){
-        initTable(1);
-        },
-    });
+        var ids = getAllCheckedObj();
+        
+        $.ajax({
+            url:CONFIG.URL.CONTROL_DELETE,
+            type:"DELETE",
+            contentType:"application/json",
+            accept : "application/json",
+            traditional: true,
+            dataType : 'json',
+            data:JSON.stringify(ids),
+            success:function(result){
+            initTable(1);
+            },
+        });
     };
 
 

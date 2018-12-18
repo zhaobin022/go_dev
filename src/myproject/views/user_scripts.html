@@ -16,11 +16,10 @@
 <script>
 
 CONFIG = {};
+
 CONFIG["TABLE"] = {};
 CONFIG.TABLE["HEADER"] = ["Id","用户名","是否超级管理员","操作"];
-
 CONFIG.TABLE["BODY"] = ["Id","Name","IsAdmin","Operation"];
-
 CONFIG.TABLE["COLUMN"] = {};
 CONFIG.TABLE.COLUMN["Id"] = {};
 CONFIG.TABLE.COLUMN.Id["type"] = "text";
@@ -30,10 +29,8 @@ CONFIG.TABLE.COLUMN["IsAdmin"] = {};
 CONFIG.TABLE.COLUMN.IsAdmin["type"] = "bool";
 CONFIG.TABLE.COLUMN.IsAdmin["true"] = '<i class="fa fa-toggle-on text-success fa-2x"></i>';
 CONFIG.TABLE.COLUMN.IsAdmin["false"] = '<i class="fa fa-toggle-on fa-flip-horizontal text-gray fa-2x"></i>';
-
 CONFIG.TABLE.COLUMN["Operation"] = {};
 CONFIG.TABLE.COLUMN.Operation["type"] = "template";
-
 CONFIG.TABLE.COLUMN.Operation["template"] = '<div class="btn-group"><button class="btn btn-primary btn-xs" name="edit" data="{Id}"><i class="fa fa-pencil"></i> 编辑</button></div>&nbsp;&nbsp;&nbsp;<div class="btn-group"><button class="btn btn-primary btn-xs" name="changePass"><i class="fa fa-fw fa-unlock-alt"></i> 修改密码</button></div>'
 CONFIG.TABLE.COLUMN.Operation["key"] = ["Id"];
 
@@ -41,6 +38,8 @@ CONFIG["URL"] = {};
 CONFIG.URL["CONTROL_GET"] = '{{urlfor "UserController.Get"}}';
 CONFIG.URL["ADD_CONTROL_GET"] = '{{urlfor "UserAddController.Get"}}';
 CONFIG.URL["EDIT_CONTROL_GET"] = '/useredit/';
+CONFIG.URL["CONTROL_DELETE"] = '{{urlfor "UserController.Delete()"}}';
+
 CONFIG.TITLES = {};
 CONFIG.TITLES["ADD_TITLE"] = '添加用户';
 CONFIG.TITLES["EDIT_TITLE"] = '编辑用户';

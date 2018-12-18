@@ -155,7 +155,6 @@ func DelObjAndRel(obj interface{}, relNameSlice []string, ids *[]int) (err error
 		if err != nil {
 			return
 		}
-
 	}
 	return
 }
