@@ -62,35 +62,34 @@ func DoPermCheck(user *User, uri string) (b bool) {
 	}
 	o := orm.NewOrm()
 
-	var permissions []*Permission
-	var permission = new(Permission)
-	_, err := o.QueryTable(permission).Filter("User__User__Id", user.Id).All(&permissions)
+	_, err := o.LoadRelated(user, "Permission")
 	if err != nil {
 		return
 	}
-
-	for _, perm := range permissions {
+	fmt.Println(user.Permission, "permission")
+	for _, perm := range user.Permission {
 
 		ctrlSlice := strings.Split(perm.Url, ",")
 		for _, controller := range ctrlSlice {
 			permUrl := beego.URLFor(strings.TrimSpace(controller))
-			fmt.Println(permUrl, uri, "ppppppppppppppppppppppppp")
+			fmt.Println("bbbbb", ctrlSlice, "ccccccccccccccccccc", permUrl, "aaaaaaaaaaaaaaaaaa", uri, "ppppppppppppppppppppppppp")
 			if permUrl == uri {
 				b = true
 				return
 			}
 		}
 	}
-	role := new(Role)
-	var roles []*Role
-	_, err = o.QueryTable(role).Filter("User__User__Id", user.Id).All(&roles)
+
+	_, err = o.LoadRelated(user, "Role")
 	if err != nil {
 		return
 	}
-	for _, r := range roles {
-
-		_, err = o.QueryTable(permission).Filter("Role__Role__Id", r.Id).All(&permissions)
-		for _, p := range permissions {
+	for _, r := range user.Role {
+		_, err = o.LoadRelated(r, "Permission")
+		if err != nil {
+			return
+		}
+		for _, p := range r.Permission {
 			ctrlSlice := strings.Split(p.Url, ",")
 			for _, controller := range ctrlSlice {
 				permUrl := beego.URLFor(strings.TrimSpace(controller))

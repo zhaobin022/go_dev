@@ -2,6 +2,8 @@ package models
 
 import "github.com/astaxie/beego/orm"
 
+var PermUrlType = make(map[int]string)
+
 type Permission struct {
 	Id      int64
 	Name    string `orm:"unique"`
@@ -9,6 +11,7 @@ type Permission struct {
 	Url     string  `orm:"unique"`
 	User    []*User `orm:"reverse(many)"`
 	Role    []*Role `orm:"reverse(many)"`
+	Type    int
 }
 
 func (r *Role) CheckRolePermission(permName string) (b bool) {

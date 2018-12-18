@@ -74,6 +74,18 @@
             </div>
             <!-- /.col -->
             <div class="col-md-6">
+
+                    <div class="form-group">
+                        <label>Url类型</label>
+                        <select id="roleType" name="roleType" class="form-control select2"  data-placeholder="请选择Url类型" style="width: 100%;">
+                            <option ></option>
+                            {{range $value, $name := .urlType}}
+                            <option data="{{$value}}" value="{{$value}}">{{$name}}</option>
+                            {{end}}
+                        </select>
+                    </div>
+                    <!-- /.form-group -->
+
                     <div class="form-group">
                         <label>用户列表</label>
                         <select id="user" name="user" class="form-control select2" multiple="multiple" data-placeholder="请选择角色" style="width: 100%;">

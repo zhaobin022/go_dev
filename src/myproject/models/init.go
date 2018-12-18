@@ -34,4 +34,8 @@ func init() {
 	regStruct["Permission"] = Permission{}
 	regStruct["Role"] = Role{}
 	regStruct["User"] = User{}
+
+	PermUrlType[0] = "函数名"
+	PermUrlType[1] = "Url地址"
+	PermUrlType[2] = "正则表达式"
 }

@@ -10,8 +10,6 @@ import (
 	"github.com/astaxie/beego/orm"
 )
 
-
-
 type PermissionController struct {
 	BaseControl
 }
@@ -245,8 +243,8 @@ func (this *PermissionEditController) Get() {
 	this.Data["permission"] = permission
 	this.Data["roles"] = roles
 	this.Data["users"] = users
-	fmt.Println(permission, 11111111111111, this.TplName)
-
+	this.Data["urlType"] = PermUrlType
+	
 }
 
 func (this *PermissionEditController) Post() {

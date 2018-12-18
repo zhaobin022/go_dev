@@ -103,7 +103,7 @@ func (this *BaseControl) Prepare() {
 	if username != "" {
 		this.Data["username"] = username
 	}
-
+	this.Data["Ctl"] = this
 	this.CheckPerm()
 }
 
@@ -130,19 +130,15 @@ func (this *BaseControl) CheckPerm() {
 	}
 
 	var uri string
-	exp3 := regexp.MustCompile(`(.*)\?.*`)
-	fmt.Println(uri, "888888888")
-	result3 := exp3.FindAllStringSubmatch(ctx.Input.URI(), -1)
-	if len(result3) > 0 {
-		fmt.Println(result3[0], "999999999999999")
-		uri = result3[0][1]
+	exp := regexp.MustCompile(`(.*)\?.*`)
+	ret := exp.FindAllStringSubmatch(ctx.Input.URI(), -1)
+	if len(ret) > 0 {
+		uri = ret[0][1]
 	} else {
 		uri = ctx.Request.RequestURI
 	}
 
-	fmt.Println(uri, "------------------", ctx.Input.URI())
 	ok := DoPermCheck(user, uri)
-	fmt.Println(ok, "___________________________")
 	if ok == false {
 		if ctx.Request.RequestURI != loginUrl && ctx.Request.RequestURI != permDenyUrl {
 			if ctx.Input.IsAjax() {
@@ -159,5 +155,7 @@ func (this *BaseControl) CheckPerm() {
 }
 
 func init() {
+
 	beego.AddFuncMap("IfObjInObjRel", IfObjInObjRel)
+	beego.AddFuncMap("PermCtl", PermCtl)
 }
