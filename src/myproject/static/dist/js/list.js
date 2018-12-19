@@ -316,12 +316,16 @@
                     var ret = iframeWin.FormSubmit();
                     //提示层
                     console.log(ret,111111);
+                    
                     if (ret.Status) {
                     layer.closeAll();
                         layer.msg(ret.Msg);
                         initTable(1);
+                    } else if (ret.PermDeny == true){
+                        layer.msg(ret.Msg, {icon: 5});
                     } else {
                         layer.msg(ret.Msg, {icon: 5});
+
                     }
                     
                     

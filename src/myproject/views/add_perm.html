@@ -78,6 +78,16 @@
             <!-- /.col -->
             <div class="col-md-6">
                     <div class="form-group">
+                            <label>Url类型</label>
+                            <select id="permType" name="permType" class="form-control select2"  data-placeholder="请选择Url类型" style="width: 100%;">
+                                <option ></option>
+                                {{range $value, $name := .urlType}}
+                                    <option data="{{$value}}" value="{{$value}}">{{$name}}</option>
+                                {{end}}
+                            </select>
+                        </div>
+                        <!-- /.form-group -->
+                    <div class="form-group">
                             <label>用户列表</label>
                             <select id="users" name="users" class="form-control select2" multiple="multiple" data-placeholder="请选择权限"
                             style="width: 100%;">
@@ -158,6 +168,22 @@
         return eleList
       };
 
+
+      function getSingleValue(ele){
+        var selectedEl = $("#"+ele).next().find("[class='select2-selection__rendered']").eq(0);
+        var selectedKey = $(selectedEl).prop("title");
+        var options = $("#"+ele).find("option");
+        var isadmin = ""
+        $(options).each(function(k,ele){
+            if ($(ele).text()==selectedKey){
+                isadmin = $(ele).attr("data");
+                return false;
+            };
+        });
+        return isadmin
+      };
+
+
       function FormSubmit() {
         // $("#thisForm").submit();
         var request = {};
@@ -165,13 +191,16 @@
         request["Name"] = $("[name='permname']").val();
         request["Url"] = $("[name='url']").val();
        
-        
+        var permType = getSingleValue("permType")
         
         var roles = getEleIdList("roles");
         var users = getEleIdList("users");
 
+
+        
         request["User"] = users;
         request["Role"] = roles;
+        request["Type"] = parseInt(permType);
         console.log(request);
         var flag = false;        
         $.ajax({ 

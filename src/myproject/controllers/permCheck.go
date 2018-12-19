@@ -3,6 +3,7 @@ package controllers
 import (
 	"errors"
 	"fmt"
+	"regexp"
 	"strings"
 
 	"github.com/astaxie/beego/context"
@@ -54,7 +55,50 @@ func getUser(userid interface{}) (user *User, err error) {
 	return
 }
 
-func DoPermCheck(user *User, uri string) (b bool) {
+func checkUrl(permission *Permission, uri, method string, tag bool) (b bool) {
+	b = false
+	urlSlice := strings.Split(permission.Url, ",")
+	for _, url := range urlSlice {
+
+		if tag == true {
+			if url == uri {
+				b = true
+				return
+			}
+		} else if tag == false {
+			if permission.Type == 1 {
+				// pcreUrlSlice := strings.Split(permission.Url, ".")
+				// m := strings.ToUpper(pcreUrlSlice[1])
+				permUrl := beego.URLFor(strings.TrimSpace(url))
+				fmt.Println("func : ", permUrl, uri)
+				if permUrl == uri {
+					b = true
+				}
+			} else if permission.Type == 2 {
+				fmt.Println("url :", permission.Url, uri)
+				if strings.TrimSpace(permission.Url) == uri {
+					b = true
+				}
+			} else if permission.Type == 3 {
+				match, _ := regexp.MatchString(permission.Url, uri)
+
+				pcreUrlSlice := strings.Split(permission.Url, "|")
+				fmt.Println("pcre match :", match)
+				m := strings.ToUpper(pcreUrlSlice[1])
+				if match && m == method {
+					b = true
+				}
+			}
+		}
+
+		if b == true {
+			return
+		}
+	}
+	return
+}
+
+func DoPermCheck(user *User, uri, method string, tag bool) (b bool) {
 	b = false
 	if user.IsAdmin {
 		b = true
@@ -68,15 +112,9 @@ func DoPermCheck(user *User, uri string) (b bool) {
 	}
 	fmt.Println(user.Permission, "permission")
 	for _, perm := range user.Permission {
-
-		ctrlSlice := strings.Split(perm.Url, ",")
-		for _, controller := range ctrlSlice {
-			permUrl := beego.URLFor(strings.TrimSpace(controller))
-			fmt.Println("bbbbb", ctrlSlice, "ccccccccccccccccccc", permUrl, "aaaaaaaaaaaaaaaaaa", uri, "ppppppppppppppppppppppppp")
-			if permUrl == uri {
-				b = true
-				return
-			}
+		b = checkUrl(perm, uri, method, tag)
+		if b == true {
+			return
 		}
 	}
 
@@ -90,13 +128,9 @@ func DoPermCheck(user *User, uri string) (b bool) {
 			return
 		}
 		for _, p := range r.Permission {
-			ctrlSlice := strings.Split(p.Url, ",")
-			for _, controller := range ctrlSlice {
-				permUrl := beego.URLFor(strings.TrimSpace(controller))
-				if permUrl == uri {
-					b = true
-					return
-				}
+			b = checkUrl(p, uri, method, tag)
+			if b == true {
+				return
 			}
 		}
 	}

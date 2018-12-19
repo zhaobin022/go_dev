@@ -109,6 +109,7 @@ func (this *BaseControl) Prepare() {
 
 func (this *BaseControl) CheckPerm() {
 	ctx := this.Ctx
+	method := this.Ctx.Request.Method
 	userId := ctx.Input.Session("userid")
 	permDenyUrl := beego.URLFor("PermDenyController.Get")
 	loginUrl := beego.URLFor("LoginController.Get")
@@ -120,6 +121,8 @@ func (this *BaseControl) CheckPerm() {
 			if ctx.Input.IsAjax() {
 				var basePage *BasePage = &BasePage{}
 				basePage.PermDeny = true
+				basePage.Msg = "无权限"
+				fmt.Println(basePage.Msg, basePage.PermDeny, *basePage, "basePage")
 				this.Data["json"] = basePage
 				this.ServeJSON()
 			} else {
@@ -138,12 +141,13 @@ func (this *BaseControl) CheckPerm() {
 		uri = ctx.Request.RequestURI
 	}
 
-	ok := DoPermCheck(user, uri)
+	ok := DoPermCheck(user, uri, method, false)
 	if ok == false {
 		if ctx.Request.RequestURI != loginUrl && ctx.Request.RequestURI != permDenyUrl {
 			if ctx.Input.IsAjax() {
 				var basePage *BasePage = &BasePage{}
 				basePage.PermDeny = true
+				basePage.Msg = "无权限"
 				this.Data["json"] = basePage
 				this.ServeJSON()
 			} else {

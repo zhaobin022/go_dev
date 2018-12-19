@@ -5,7 +5,6 @@ import (
 	"reflect"
 	"strings"
 
-	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/orm"
 )
 
@@ -37,14 +36,16 @@ func IfObjInObjRel(obj, objrel interface{}) (b bool) {
 }
 
 func PermCtl(ctl *BaseControl, permStr string) (b bool) {
+	method := ctl.Ctx.Request.Method
 	b = false
 	ctx := ctl.Ctx
 	userId := ctx.Input.Session("userid")
-	uri := beego.URLFor(permStr)
+	// uri := beego.URLFor(permStr)
 	user, err := getUser(userId)
 	if err != nil {
 		return
 	}
-	b = DoPermCheck(user, uri)
+	b = DoPermCheck(user, permStr, method, true)
+	// fmt.Println(user, uri, b, permStr, "html permission check")
 	return
 }

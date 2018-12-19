@@ -77,10 +77,14 @@
 
                     <div class="form-group">
                         <label>Url类型</label>
-                        <select id="roleType" name="roleType" class="form-control select2"  data-placeholder="请选择Url类型" style="width: 100%;">
+                        <select id="permType" name="permType" class="form-control select2"  data-placeholder="请选择Url类型" style="width: 100%;">
                             <option ></option>
                             {{range $value, $name := .urlType}}
-                            <option data="{{$value}}" value="{{$value}}">{{$name}}</option>
+                               {{ if eq $.permission.Type  $value }}
+                                <option data="{{$value}}" selected="selected" value="{{$value}}">{{$name}}</option>
+                                {{else}}
+                                <option data="{{$value}}" value="{{$value}}">{{$name}}</option>
+                                {{end}}
                             {{end}}
                         </select>
                     </div>
@@ -176,10 +180,25 @@
       };
 
 
+      function getSingleValue(ele){
+        var selectedEl = $("#"+ele).next().find("[class='select2-selection__rendered']").eq(0);
+        var selectedKey = $(selectedEl).prop("title");
+        var options = $("#"+ele).find("option");
+        var isadmin = ""
+        $(options).each(function(k,ele){
+            if ($(ele).text()==selectedKey){
+                isadmin = $(ele).attr("data");
+                return false;
+            };
+        });
+        return isadmin
+      };
+
+
       function FormSubmit() {
         var request = {};
         
-
+        var permType = getSingleValue("permType")
         var roles = getEleIdList("role");
         var users = getEleIdList("user");
         var url = $("#url").val();
@@ -188,6 +207,7 @@
         request["User"] = users;
         request["Url"] = url;
         request["Comment"] = comment;
+        request["Type"] = parseInt(permType);
         
         var flag = false;
         $.ajax({ 

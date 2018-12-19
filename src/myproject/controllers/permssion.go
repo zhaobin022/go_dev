@@ -127,7 +127,7 @@ func (this *PermssionAddController) Get() {
 	}
 
 	this.Data["roles"] = roles
-
+	this.Data["urlType"] = PermUrlType
 	this.Data["users"] = users
 }
 
@@ -144,10 +144,30 @@ func (this *PermssionAddController) Post() {
 			return
 		}
 
+		if permissionReq.Url == "" {
+			res.Msg = "URL不能为空!"
+			res.Status = false
+			this.Data["json"] = res
+			return
+		}
+		var permTypeFlag = false
+		for k, _ := range PermUrlType {
+			if permissionReq.Type == k {
+				permTypeFlag = true
+			}
+		}
+		if permTypeFlag == false {
+			res.Msg = "Url 类型不正确!"
+			res.Status = false
+			this.Data["json"] = res
+			return
+		}
+
 		permission := new(Permission)
 
 		o := orm.NewOrm()
 
+		permission.Type = permissionReq.Type
 		// 获取 QuerySeter 对象，user 为表名
 		qs := o.QueryTable(permission)
 		exist := qs.Filter("Name", permissionReq.Name).Exist()
@@ -244,7 +264,7 @@ func (this *PermissionEditController) Get() {
 	this.Data["roles"] = roles
 	this.Data["users"] = users
 	this.Data["urlType"] = PermUrlType
-	
+
 }
 
 func (this *PermissionEditController) Post() {
@@ -270,11 +290,26 @@ func (this *PermissionEditController) Post() {
 		// }
 
 		if permissionReq.Url == "" {
-			res.Msg = "权限名URL不能为空!"
+			res.Msg = "URL不能为空!"
 			res.Status = false
 			this.Data["json"] = res
 			return
 		}
+
+		var permTypeFlag = false
+		for k, _ := range PermUrlType {
+			if permissionReq.Type == k {
+				permTypeFlag = true
+			}
+		}
+
+		if permTypeFlag == false {
+			res.Msg = "Url 类型不正确!"
+			res.Status = false
+			this.Data["json"] = res
+			return
+		}
+
 		permission := new(Permission)
 		o := orm.NewOrm()
 		permission.Id = permssionId
@@ -297,7 +332,7 @@ func (this *PermissionEditController) Post() {
 		}
 
 		permission.Url = permissionReq.Url
-
+		permission.Type = permissionReq.Type
 		//更新用户角色关系
 		err = SyncObjRel(permission, permissionReq.Role, "Role")
 		//更新用户权限关系
